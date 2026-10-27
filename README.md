@@ -22,7 +22,7 @@ adb devices
 record_trace.bat
 ```
 
-默认行为：
+默认行为（见 `record_trace.config`）：
 
 | 参数 | 值 |
 |------|-----|
@@ -30,11 +30,22 @@ record_trace.bat
 | 时长 | 20 秒 |
 | 缓冲区 | 32 MB |
 | Atrace 分类 | `sched freq view ss input` |
-| App | 全部应用（`-a *`） |
+| App | 全部应用（`atrace_apps: "*"`） |
+| Frame Timeline | 已开启（`android.surfaceflinger.frametimeline`） |
 
 录制结束后会自动在浏览器打开 [ui.perfetto.dev](https://ui.perfetto.dev) 加载该 trace。
 
+> Frame Timeline 不是 atrace 分类，无法用 `-t/-b/-a` 短参数开启，必须通过完整 Perfetto 配置中的 `android.surfaceflinger.frametimeline` 数据源启用。开启后可在 UI / trace_processor 中查看 `expected_frame_timeline_slice` / `actual_frame_timeline_slice` 以及 `jank_type` 等帧级指标（Android 12+）。
+
 ## 手动录制
+
+使用与 `record_trace.bat` 相同的配置：
+
+```bash
+python record_android_trace -c record_trace.config -o trace_file.perfetto-trace
+```
+
+仅用短参数（**不含** Frame Timeline）：
 
 ```bash
 python record_android_trace -o trace_file.perfetto-trace -t 20s -b 32mb -a * sched freq view ss input
@@ -95,6 +106,7 @@ python record_android_trace -c my_trace.config
 |------|------|
 | `record_android_trace` | 官方 amalgamated Python 脚本（v58.2），负责录制与打开 trace |
 | `record_trace.bat` | Windows 一键录制封装 |
+| `record_trace.config` | 完整 Perfetto 配置（含 Frame Timeline 数据源） |
 | `.gitignore` | 忽略本地 trace 输出与 `.mimocode/` |
 
 > `record_android_trace` 由 Perfetto 官方 `tools/gen_amalgamated_python_tools` 自动生成，请勿手工编辑。
